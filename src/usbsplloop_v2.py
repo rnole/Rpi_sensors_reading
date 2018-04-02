@@ -91,7 +91,7 @@ def main():
             received_data  = received_data[0: len(received_data)-1]
             
             Check_if_midnight()
-            utils.Parse_serial_data(received_data, sensor_data)    
+            utils.Parse_serial_data(received_data, sensor_data, PEAK_DB)    
             print 'sensor data to be sent: ', sensor_data
 
             current_response = server.Send_to_server(sensor_data)          #Como hacer unit tests para esto?

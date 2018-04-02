@@ -2,7 +2,7 @@ import datetime
 from pytz import timezone
 
 
-def Parse_serial_data(rx_buf, sensor_data):
+def Parse_serial_data(rx_buf, sensor_data, noise):
     parsed_data_list = []
     parsed_data_list = rx_buf.split(',')
     now_utc = datetime.datetime.now(timezone('UTC'))
@@ -23,6 +23,6 @@ def Parse_serial_data(rx_buf, sensor_data):
     sensor_data['pm1'] = parsed_data_list[7]
     sensor_data['pm25'] = parsed_data_list[8]
     sensor_data['pm10'] = parsed_data_list[9]
-    sensor_data['sonido'] = str(PEAK_DB)
+    sensor_data['sonido'] = str(noise)
     
 
