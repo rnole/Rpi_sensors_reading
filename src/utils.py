@@ -26,3 +26,66 @@ def Parse_serial_data(rx_buf, sensor_data, noise):
     sensor_data['sonido'] = str(noise)
     
 
+def Check_if_midnight():
+    now_utc = datetime.datetime.now(timezone('UTC'))
+    now_peru = now_utc.astimezone(timezone('America/Lima')).strftime("%H:%M")
+    if((now_peru == '00:00') or (now_peru == '00:01')):
+        ser.write('z')
+
+def Has_passed_15_minutes(counter):
+    if(counter == 15):
+        return True
+    else:
+        return False
+
+
+def Reset_counter_minute():
+    return 0
+
+
+def Increase_counter_minute(counter):
+    counter =  counter + 1
+    return counter
+
+def Get_average_reading(readings_list):
+    average_reading = dict()
+    now_utc = datetime.datetime.now(timezone('UTC'))
+
+    average_reading['username']  = "richard"
+    average_reading['pwd']       = "passw0rd"
+    average_reading['sensor_id'] = "2"
+    average_reading['timestamp'] = now_utc.astimezone(timezone('America/Lima')).strftime("%Y-%m-%d %H:%M:%S")
+
+    for idx in range(0, len(readings_list)):
+        average_reading['co']       += readings_list[idx]
+        average_reading['o3']       += readings_list[idx]
+        average_reading['no2']      += readings_list[idx]
+        average_reading['so2']      += readings_list[idx]
+        average_reading['co2']      += readings_list[idx]
+        average_reading['temp']     += readings_list[idx]
+        average_reading['hum']      += readings_list[idx]
+        average_reading['uv']       += readings_list[idx]
+        average_reading['lum']      += readings_list[idx]
+        average_reading['pm1']      += readings_list[idx]
+        average_reading['pm25']     += readings_list[idx]
+        average_reading['pm10']     += readings_list[idx]
+        average_reading['sonido']   += readings_list[idx]
+
+
+    average_reading['co']       /= len(readings_list)
+    average_reading['o3']       /= len(readings_list)
+    average_reading['no2']      /= len(readings_list)
+    average_reading['so2']      /= len(readings_list)
+    average_reading['co2']      /= len(readings_list)
+    average_reading['temp']     /= len(readings_list)
+    average_reading['hum']      /= len(readings_list)
+    average_reading['uv']       /= len(readings_list)
+    average_reading['lum']      /= len(readings_list)
+    average_reading['pm1']      /= len(readings_list)
+    average_reading['pm25']     /= len(readings_list)
+    average_reading['pm10']     /= len(readings_list)
+    average_reading['sonido']   /= len(readings_list)
+
+    return average_reading
+
+

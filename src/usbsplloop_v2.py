@@ -14,6 +14,10 @@ from globals import NUMERATOR, DENOMINATOR
 import numpy
 import utils
 
+
+PATH_INSTANT_READING = '/limaio/api/v1.0/registerReading'
+PATH_AVERAGE_READING = '/limaio/api/v1.0/registerAvgReading'
+
 ser = serial.Serial('/dev/ttyAMA0', 9600, timeout=1)
 received_data = ''
 
@@ -27,13 +31,6 @@ def Clean_globals():
 
         received_data = ''
         PEAK_DB = 0
-
-def Check_if_midnight():
-    now_utc = datetime.datetime.now(timezone('UTC'))
-    now_peru = now_utc.astimezone(timezone('America/Lima')).strftime("%H:%M")
-    if(now_peru == '00:00'):
-        ser.write('z')
-
 
 
 def get_decibels(stream, spl):
@@ -57,6 +54,9 @@ def main():
     global received_data, PEAK_DB
     current_response  = ''
     previous_response = ''
+    counter_1_minute  = 0
+    last_15_readings  = []
+    average_reading   = dict()
 
     ser.flushInput()
     last_time = int(time.time())
@@ -88,36 +88,34 @@ def main():
         if('\n' in received_data):
             ser.flushInput()
             sensor_data = {}
-            received_data  = received_data[0: len(received_data)-1]
+            counter_1_minute = utils.Increase_counter_minute(counter_1_minute)
+            received_data    = received_data[0: len(received_data)-1]
             
-            Check_if_midnight()
-            utils.Parse_serial_data(received_data, sensor_data, PEAK_DB)    
+            Check_if_midnight() 
+            utils.Parse_serial_data(received_data, sensor_data, PEAK_DB)
+            backup.save_sensor_data(sensor_data)
+            last_15_readings.append(sensor_data)
+
             print 'sensor data to be sent: ', sensor_data
-
-            current_response = server.Send_to_server(sensor_data)          #Como hacer unit tests para esto?
-
-            if(current_response == 'failure'):
-                backup.save_sensor_data(sensor_data)
-
-
-            elif((current_response == 'success') and (previous_response == 'failure')):
-                backup.send_saved_data()
-                ser.flushInput()
-
-
+            current_response = server.Send_to_server(sensor_data, PATH_INSTANT_READING)
+            
+            if(utils.Has_passed_15_minutes(counter_1_minute)):
+                average_reading     = utils.Get_average_reading(last_15_readings)
+                print 'sensor data to be sent: ', average_reading
+                current_response    = server.Send_to_server(average_reading, PATH_AVERAGE_READING)
+                counter_1_minute    = utils.Reset_counter_minute()
+                last_15_readings[:] = []
+                                             
+                      
             previous_response = current_response
             Clean_globals()
 
         time.sleep(0.2)
 
-    
     pa.terminate()
 
 if __name__ == '__main__':
     main()
-    #print 'Hello there!'
-
-
 
 
 

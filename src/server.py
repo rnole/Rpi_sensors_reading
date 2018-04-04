@@ -1,9 +1,9 @@
 
 import requests
 
-def Send_to_server(sensor_data):
+def Send_to_server(sensor_data, path):
 
-    url = 'https://dev.jobenas.com/limaio/api/v1.0/registerReading'
+    url = 'https://dev.jobenas.com' + path 
 
     try:
         r = requests.post(url, json=sensor_data)
